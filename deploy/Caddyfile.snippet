@@ -1,0 +1,21 @@
+# WorkTime — демо тестового задания (systemd, порт 8097)
+worktime.onoy.app {
+	encode zstd gzip
+	reverse_proxy 172.18.0.1:8097 {
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	log {
+		output file /data/worktime-access.log {
+			roll_size 10MB
+			roll_keep 5
+		}
+	}
+}

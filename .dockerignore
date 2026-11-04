@@ -1,0 +1,7 @@
+target/
+data/
+.git/
+.idea/
+docs/
+_private/
+*.md

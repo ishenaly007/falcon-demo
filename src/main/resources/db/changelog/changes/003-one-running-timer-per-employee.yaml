@@ -1,0 +1,21 @@
+databaseChangeLog:
+  # Инвариант "у сотрудника не больше одного запущенного таймера" закреплён в самой БД,
+  # а не только в коде сервиса. Вычисляемая колонка равна employee_id, пока таймер идёт
+  # (ended_at IS NULL), и NULL после остановки. Уникальный индекс допускает сколько угодно
+  # NULL, но не два одинаковых employee_id — то есть не два запущенных таймера.
+  - changeSet:
+      id: 003-one-running-timer-per-employee
+      author: worktime
+      changes:
+        - sql:
+            dbms: h2
+            sql: >
+              ALTER TABLE time_entry ADD COLUMN running_employee_id BIGINT
+              GENERATED ALWAYS AS (CASE WHEN ended_at IS NULL THEN employee_id END)
+        - createIndex:
+            tableName: time_entry
+            indexName: uq_time_entry_one_running
+            unique: true
+            columns:
+              - column:
+                  name: running_employee_id

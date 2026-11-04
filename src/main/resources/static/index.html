@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WorkTime — учёт рабочего времени</title>
+    <meta name="description" content="Учёт рабочего времени сотрудников: таймер задач и отчёты за период">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="currentColor"/>
+            <circle cx="16" cy="17" r="8.5" fill="none" stroke="#fff" stroke-width="2.2"/>
+            <path d="M16 12.5V17l3 2" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.5 6.5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <div>
+            <div class="brand-name">WorkTime</div>
+            <div class="brand-sub">учёт рабочего времени</div>
+        </div>
+    </div>
+    <div class="topbar-right">
+        <div class="now" id="now" aria-live="off"></div>
+        <button class="icon-btn" id="themeToggle" type="button" title="Сменить тему" aria-label="Сменить тему">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+    </div>
+</header>
+
+<div class="offline" id="offline" role="alert" hidden>
+    <strong>Нет связи с сервером.</strong>
+    Проверьте, что приложение запущено (<code>mvnw spring-boot:run</code>). Страница переподключится сама.
+</div>
+
+<main class="container">
+    <section class="stats" aria-label="Сводка">
+        <div class="stat">
+            <div class="stat-label">Сотрудников</div>
+            <div class="stat-value" id="statEmployees">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Сейчас работают</div>
+            <div class="stat-value"><span class="live-dot" id="statLiveDot"></span><span id="statActive">—</span></div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Отработано сегодня</div>
+            <div class="stat-value" id="statToday">—</div>
+        </div>
+    </section>
+
+    <div class="grid">
+        <!-- Команда и таймеры -->
+        <section class="panel" aria-labelledby="teamTitle">
+            <div class="panel-head">
+                <h2 id="teamTitle">Команда</h2>
+                <span class="muted" id="teamCount"></span>
+            </div>
+
+            <form class="add-form" id="addForm" autocomplete="off">
+                <input id="empName" name="name" type="text" maxlength="100" placeholder="Имя сотрудника" required aria-label="Имя сотрудника">
+                <input id="empPosition" name="position" type="text" maxlength="100" placeholder="Должность" aria-label="Должность">
+                <button class="btn btn-primary" type="submit">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Добавить
+                </button>
+            </form>
+
+            <ul class="employees" id="employees" aria-live="polite"></ul>
+            <div class="empty" id="employeesEmpty" hidden>
+                <div class="empty-icon">👋</div>
+                <div class="empty-title">Пока никого нет</div>
+                <div class="muted">Добавьте первого сотрудника — и можно запускать таймер.</div>
+            </div>
+        </section>
+
+        <!-- Отчёт -->
+        <section class="panel" aria-labelledby="reportTitle">
+            <div class="panel-head">
+                <h2 id="reportTitle">Отчёт</h2>
+                <span class="muted" id="reportZone"></span>
+            </div>
+
+            <div class="filters">
+                <div class="segmented" role="tablist" id="presets">
+                    <button type="button" data-preset="today">Сегодня</button>
+                    <button type="button" data-preset="week">Неделя</button>
+                    <button type="button" data-preset="month">Месяц</button>
+                    <button type="button" data-preset="custom">Период</button>
+                </div>
+                <div class="filter-row">
+                    <label>С <input type="date" id="from"></label>
+                    <label>по <input type="date" id="to"></label>
+                    <select id="employeeFilter" aria-label="Фильтр по сотруднику">
+                        <option value="">Все сотрудники</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="total-card">
+                <div>
+                    <div class="stat-label">Всего за период</div>
+                    <div class="total-value" id="totalValue">0 ч 00 мин</div>
+                </div>
+                <div class="total-meta" id="totalMeta"></div>
+            </div>
+
+            <ul class="bars" id="bars"></ul>
+
+            <h3 class="sub-title">Записи <span class="count" id="entriesCount"></span></h3>
+            <div class="table-wrap">
+                <table class="entries">
+                    <thead>
+                    <tr>
+                        <th>Сотрудник</th>
+                        <th>Задача</th>
+                        <th>Время</th>
+                        <th class="num">Длительность</th>
+                    </tr>
+                    </thead>
+                    <tbody id="entries"></tbody>
+                </table>
+            </div>
+            <nav class="pager" id="pager" aria-label="Страницы записей" hidden></nav>
+            <div class="empty" id="reportEmpty" hidden>
+                <div class="empty-icon">🗓️</div>
+                <div class="empty-title">За выбранный период записей нет</div>
+                <div class="muted">Запустите таймер или выберите другой период.</div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer class="footer">
+    WorkTime · Java 21 · Spring Boot · H2 · данные сохраняются между перезапусками
+</footer>
+
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<template id="employeeTpl">
+    <li class="employee">
+        <div class="avatar"></div>
+        <div class="emp-main">
+            <div class="emp-head">
+                <div>
+                    <div class="emp-name"></div>
+                    <div class="emp-position muted"></div>
+                </div>
+                <div class="emp-status"></div>
+            </div>
+            <form class="timer-form" autocomplete="off">
+                <input type="text" maxlength="500" placeholder="Над чем работаете?" aria-label="Описание задачи">
+                <button class="btn btn-start" type="submit">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
+                    Старт
+                </button>
+            </form>
+            <div class="running">
+                <div class="running-task"></div>
+                <div class="running-row">
+                    <div class="clock"></div>
+                    <button class="btn btn-stop" type="button">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                        Стоп
+                    </button>
+                </div>
+            </div>
+        </div>
+    </li>
+</template>
+
+<script src="app.js"></script>
+</body>
+</html>

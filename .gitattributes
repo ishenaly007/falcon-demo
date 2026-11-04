@@ -1,0 +1,10 @@
+* text=auto
+
+# Скрипт Maven Wrapper должен оставаться с LF, иначе он не запустится в Linux/Docker/CI
+mvnw text eol=lf
+*.sh text eol=lf
+*.cmd text eol=crlf
+
+*.png binary
+*.jpg binary
+*.jar binary

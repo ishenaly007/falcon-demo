@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: changes/001-create-employee.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/002-create-time-entry.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: changes/003-one-running-timer-per-employee.yaml
+      relativeToChangelogFile: true

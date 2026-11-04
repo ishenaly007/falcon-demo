@@ -1,0 +1,7 @@
+# Тесты работают на in-memory H2, чтобы не трогать файл ./data с "боевыми" данными.
+spring:
+  datasource:
+    url: jdbc:h2:mem:worktime-test;DB_CLOSE_DELAY=-1
+
+app:
+  time-zone: Europe/Moscow

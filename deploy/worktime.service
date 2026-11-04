@@ -1,0 +1,28 @@
+# systemd-юнит демо-стенда WorkTime.
+# Установка: /etc/systemd/system/onoy-worktime.service
+[Unit]
+Description=WorkTime demo (учёт рабочего времени)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=worktime
+Group=worktime
+WorkingDirectory=/opt/onoy-worktime
+Environment=DB_URL=jdbc:h2:file:/opt/onoy-worktime/data/worktime
+Environment=APP_TIME_ZONE=Asia/Bishkek
+Environment=PORT=8097
+ExecStart=/usr/bin/java -Xmx256m -XX:+UseSerialGC -Duser.timezone=Asia/Bishkek \
+    -jar /opt/onoy-worktime/worktime.jar --spring.profiles.active=demo
+Restart=on-failure
+RestartSec=5
+
+# Песочница: сервис может писать только в каталог с БД
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/onoy-worktime/data
+
+[Install]
+WantedBy=multi-user.target

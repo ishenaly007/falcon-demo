@@ -1,0 +1,50 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-time-entry
+      author: worktime
+      changes:
+        - createTable:
+            tableName: time_entry
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_time_entry
+              - column:
+                  name: employee_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_time_entry_employee
+                    references: employee(id)
+              - column:
+                  name: description
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: started_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              # NULL = таймер ещё идёт
+              - column:
+                  name: ended_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - createIndex:
+            tableName: time_entry
+            indexName: idx_time_entry_employee_started
+            columns:
+              - column:
+                  name: employee_id
+              - column:
+                  name: started_at
+        - createIndex:
+            tableName: time_entry
+            indexName: idx_time_entry_started
+            columns:
+              - column:
+                  name: started_at
